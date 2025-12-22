@@ -40,25 +40,34 @@ const MysteryWheel = () => {
     // Random full rotations (5-10)
     const spins = Math.floor(5 + Math.random() * 5);
     
-    // Calculate the target normalized rotation to land on the CENTER of the chosen segment
-    // At rotation 0, segment 0's edge is at pointer. When wheel rotates clockwise, segments move right.
-    // To get segment N at pointer: rotate by ((POIS.length - N) % POIS.length) segments
-    // Add 0.5 segment to center it under the pointer
-    const k = (POIS.length - randomSegment) % POIS.length;
-    const targetNormalized = (k + 0.5) * segmentAngle;
-    
-    // Calculate how much more we need to rotate from current position to reach target
-    const currentNormalized = rotation % 360;
+    // Calculate the target normalized rotation (0-360) so the CENTER of the chosen segment sits under the pointer.
+    // Segments are drawn starting at -90° (top) and proceed clockwise.
+    // The pointer is at the top, and we rotate the wheel clockwise by `rotation` degrees.
+    // With this setup, the segment under the pointer can be derived from:
+    //   index = floor(normalize(-rotation) / segmentAngle)
+    // So to land on `randomSegment` center:
+    //   normalize(-rotation) = (randomSegment + 0.5) * segmentAngle
+    //   => rotation = 360 - (randomSegment + 0.5) * segmentAngle (mod 360)
+    const normalize360 = (deg: number) => ((deg % 360) + 360) % 360;
+    const targetNormalized = normalize360(360 - (randomSegment + 0.5) * segmentAngle);
+
+    // Calculate how much more we need to rotate from the current position to reach target
+    const currentNormalized = normalize360(rotation);
     let additionalRotation = targetNormalized - currentNormalized;
     if (additionalRotation <= 0) additionalRotation += 360; // Ensure forward spin
-    
+
     const totalRotation = rotation + spins * 360 + additionalRotation;
-    
+
     setRotation(totalRotation);
-    
+
     setTimeout(() => {
       setIsSpinning(false);
-      setSelectedPOI(POIS[randomSegment].name);
+
+      // Safety: derive the landed segment from the final rotation so the label ALWAYS matches the visual.
+      const landedNormalized = normalize360(-totalRotation);
+      const landedIndex = Math.floor(landedNormalized / segmentAngle) % POIS.length;
+
+      setSelectedPOI(POIS[landedIndex].name);
       setShowResult(true);
     }, 5000);
   };
