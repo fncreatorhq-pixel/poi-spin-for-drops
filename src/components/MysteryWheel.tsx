@@ -72,7 +72,7 @@ const MysteryWheel = () => {
       
       const pathD = `M 50 50 L ${x1} ${y1} A 50 50 0 ${largeArc} 1 ${x2} ${y2} Z`;
       
-      // Text position
+      // Text position - radial (along the segment)
       const midAngle = (startAngle + endAngle) / 2;
       const midRad = (midAngle * Math.PI) / 180;
       const textRadius = 32;
@@ -92,11 +92,11 @@ const MysteryWheel = () => {
             x={textX}
             y={textY}
             fill="white"
-            fontSize="2.8"
+            fontSize="2.6"
             fontWeight="bold"
             textAnchor="middle"
             dominantBaseline="middle"
-            transform={`rotate(${midAngle + 90}, ${textX}, ${textY})`}
+            transform={`rotate(${midAngle}, ${textX}, ${textY})`}
             style={{ 
               fontFamily: 'Orbitron, sans-serif',
               textShadow: '0 0 3px rgba(0,0,0,0.8)',
