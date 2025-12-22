@@ -34,23 +34,24 @@ const MysteryWheel = () => {
     setShowResult(false);
     setSelectedPOI(null);
 
-    // Random spins between 5-10 full rotations + random segment
-    const spins = 5 + Math.random() * 5;
+    // Pick a random segment to land on
     const randomSegment = Math.floor(Math.random() * POIS.length);
-    const extraDegrees = randomSegment * segmentAngle + segmentAngle / 2;
-    const totalRotation = rotation + spins * 360 + extraDegrees;
+    
+    // Random spins between 5-10 full rotations
+    const spins = 5 + Math.random() * 5;
+    
+    // Calculate rotation needed to land on the chosen segment
+    // Segments are drawn starting at -90° (top), going clockwise
+    // When wheel rotates clockwise by X degrees, segment at top was originally at position -X
+    // To get segment N at the top: rotate by (N * segmentAngle) + offset to center of segment
+    const targetRotation = randomSegment * segmentAngle + segmentAngle / 2;
+    const totalRotation = rotation + spins * 360 + targetRotation;
     
     setRotation(totalRotation);
-
-    // Calculate which POI will be selected (pointer is at top, so we need to adjust)
-    const normalizedRotation = (totalRotation % 360);
-    const pointerOffset = 90; // Pointer is at top
-    const adjustedRotation = (360 - normalizedRotation + pointerOffset) % 360;
-    const selectedIndex = Math.floor(adjustedRotation / segmentAngle) % POIS.length;
     
     setTimeout(() => {
       setIsSpinning(false);
-      setSelectedPOI(POIS[selectedIndex].name);
+      setSelectedPOI(POIS[randomSegment].name);
       setShowResult(true);
     }, 5000);
   };
