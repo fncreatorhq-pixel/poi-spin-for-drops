@@ -1,5 +1,14 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+type WheelType = 'pois' | 'colors';
 
 const POIS = [
   { name: 'Latte Landing', color: 'hsl(190, 100%, 45%)' },
@@ -17,44 +26,68 @@ const POIS = [
   { name: 'Classified Canyon', color: 'hsl(170, 100%, 45%)' },
 ];
 
+const COLORS = [
+  { name: 'White', color: 'hsl(0, 0%, 95%)' },
+  { name: 'Green', color: 'hsl(120, 70%, 45%)' },
+  { name: 'Blue', color: 'hsl(210, 100%, 50%)' },
+  { name: 'Purple', color: 'hsl(270, 70%, 55%)' },
+  { name: 'Gold', color: 'hsl(45, 100%, 50%)' },
+];
+
+const WHEEL_CONFIG = {
+  pois: {
+    label: 'Drop Location',
+    items: POIS,
+    resultPrefix: "You're dropping at:",
+    emoji: '🪂',
+  },
+  colors: {
+    label: 'Rarity Color',
+    items: COLORS,
+    resultPrefix: "Your color is:",
+    emoji: '🎨',
+  },
+};
+
 const MysteryWheel = () => {
+  const [wheelType, setWheelType] = useState<WheelType>('pois');
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
-  const [selectedPOI, setSelectedPOI] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const wheelRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const segmentAngle = 360 / POIS.length;
+  const currentConfig = WHEEL_CONFIG[wheelType];
+  const items = currentConfig.items;
+  const segmentAngle = 360 / items.length;
+
+  const handleWheelChange = (value: WheelType) => {
+    if (isSpinning) return;
+    setWheelType(value);
+    setRotation(0);
+    setSelectedItem(null);
+    setShowResult(false);
+  };
 
   const spin = () => {
     if (isSpinning) return;
     
     setIsSpinning(true);
     setShowResult(false);
-    setSelectedPOI(null);
+    setSelectedItem(null);
 
     // Pick a random segment to land on
-    const randomSegment = Math.floor(Math.random() * POIS.length);
+    const randomSegment = Math.floor(Math.random() * items.length);
     
     // Random full rotations (5-10)
     const spins = Math.floor(5 + Math.random() * 5);
     
-    // Calculate the target normalized rotation (0-360) so the CENTER of the chosen segment sits under the pointer.
-    // Segments are drawn starting at -90° (top) and proceed clockwise.
-    // The pointer is at the top, and we rotate the wheel clockwise by `rotation` degrees.
-    // With this setup, the segment under the pointer can be derived from:
-    //   index = floor(normalize(-rotation) / segmentAngle)
-    // So to land on `randomSegment` center:
-    //   normalize(-rotation) = (randomSegment + 0.5) * segmentAngle
-    //   => rotation = 360 - (randomSegment + 0.5) * segmentAngle (mod 360)
     const normalize360 = (deg: number) => ((deg % 360) + 360) % 360;
     const targetNormalized = normalize360(360 - (randomSegment + 0.5) * segmentAngle);
 
-    // Calculate how much more we need to rotate from the current position to reach target
     const currentNormalized = normalize360(rotation);
     let additionalRotation = targetNormalized - currentNormalized;
-    if (additionalRotation <= 0) additionalRotation += 360; // Ensure forward spin
+    if (additionalRotation <= 0) additionalRotation += 360;
 
     const totalRotation = rotation + spins * 360 + additionalRotation;
 
@@ -63,17 +96,16 @@ const MysteryWheel = () => {
     setTimeout(() => {
       setIsSpinning(false);
 
-      // Safety: derive the landed segment from the final rotation so the label ALWAYS matches the visual.
       const landedNormalized = normalize360(-totalRotation);
-      const landedIndex = Math.floor(landedNormalized / segmentAngle) % POIS.length;
+      const landedIndex = Math.floor(landedNormalized / segmentAngle) % items.length;
 
-      setSelectedPOI(POIS[landedIndex].name);
+      setSelectedItem(items[landedIndex].name);
       setShowResult(true);
     }, 5000);
   };
 
   const createWheelSegments = () => {
-    return POIS.map((poi, index) => {
+    return items.map((item, index) => {
       const startAngle = index * segmentAngle - 90;
       const endAngle = startAngle + segmentAngle;
       
@@ -89,18 +121,21 @@ const MysteryWheel = () => {
       
       const pathD = `M 50 50 L ${x1} ${y1} A 50 50 0 ${largeArc} 1 ${x2} ${y2} Z`;
       
-      // Text position - radial (along the segment)
       const midAngle = (startAngle + endAngle) / 2;
       const midRad = (midAngle * Math.PI) / 180;
-      const textRadius = 32;
+      const textRadius = wheelType === 'colors' ? 28 : 32;
       const textX = 50 + textRadius * Math.cos(midRad);
       const textY = 50 + textRadius * Math.sin(midRad);
+
+      // For color wheel, check if text should be dark
+      const isLightColor = item.name === 'White' || item.name === 'Gold';
+      const textColor = isLightColor ? 'hsl(230, 25%, 15%)' : 'white';
       
       return (
-        <g key={poi.name}>
+        <g key={item.name}>
           <path
             d={pathD}
-            fill={poi.color}
+            fill={item.color}
             stroke="hsl(230, 25%, 15%)"
             strokeWidth="0.5"
             className="transition-all duration-300"
@@ -108,19 +143,19 @@ const MysteryWheel = () => {
           <text
             x={textX}
             y={textY}
-            fill="white"
-            fontSize="2.6"
+            fill={textColor}
+            fontSize={wheelType === 'colors' ? '4' : '2.6'}
             fontWeight="bold"
             textAnchor="middle"
             dominantBaseline="middle"
             transform={`rotate(${midAngle}, ${textX}, ${textY})`}
             style={{ 
               fontFamily: 'Orbitron, sans-serif',
-              textShadow: '0 0 3px rgba(0,0,0,0.8)',
+              textShadow: isLightColor ? 'none' : '0 0 3px rgba(0,0,0,0.8)',
               letterSpacing: '0.02em'
             }}
           >
-            {poi.name}
+            {item.name}
           </text>
         </g>
       );
@@ -129,8 +164,21 @@ const MysteryWheel = () => {
 
   return (
     <div className="relative flex flex-col items-center gap-8">
+      {/* Wheel Type Selector */}
+      <div className="absolute top-0 left-0 z-20">
+        <Select value={wheelType} onValueChange={handleWheelChange} disabled={isSpinning}>
+          <SelectTrigger className="w-[180px] bg-card border-primary/30 text-foreground">
+            <SelectValue placeholder="Select wheel" />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-primary/30">
+            <SelectItem value="pois">📍 Drop Location</SelectItem>
+            <SelectItem value="colors">🎨 Rarity Color</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Wheel Container */}
-      <div className="relative">
+      <div className="relative mt-12">
         {/* Outer glow ring */}
         <div className="absolute inset-[-20px] rounded-full bg-gradient-to-r from-primary via-secondary to-accent opacity-30 blur-xl animate-pulse" />
         
@@ -168,7 +216,7 @@ const MysteryWheel = () => {
                   dominantBaseline="middle"
                   style={{ fontFamily: 'Orbitron, sans-serif' }}
                 >
-                  FN
+                  {wheelType === 'pois' ? 'FN' : '🎨'}
                 </text>
               </svg>
             </div>
@@ -196,7 +244,7 @@ const MysteryWheel = () => {
         `}
       >
         <span className="relative z-10 drop-shadow-lg">
-          {isSpinning ? 'Spinning...' : '🎯 SPIN TO DROP'}
+          {isSpinning ? 'Spinning...' : wheelType === 'pois' ? '🎯 SPIN TO DROP' : '🎨 SPIN FOR COLOR'}
         </span>
         {!isSpinning && (
           <div className="absolute inset-0 rounded-full bg-gradient-to-t from-transparent to-white/20" />
@@ -205,7 +253,7 @@ const MysteryWheel = () => {
 
       {/* Result Display */}
       <AnimatePresence>
-        {showResult && selectedPOI && (
+        {showResult && selectedItem && (
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -219,11 +267,11 @@ const MysteryWheel = () => {
               className="bg-gradient-to-br from-card to-muted p-8 rounded-2xl border border-primary/50 box-glow text-center max-w-md mx-4"
               onClick={(e) => e.stopPropagation()}
             >
-              <p className="text-muted-foreground font-body text-lg mb-2">You're dropping at:</p>
+              <p className="text-muted-foreground font-body text-lg mb-2">{currentConfig.resultPrefix}</p>
               <h2 className="text-4xl font-display font-bold text-primary text-glow mb-4">
-                {selectedPOI}
+                {selectedItem}
               </h2>
-              <p className="text-6xl mb-4">🪂</p>
+              <p className="text-6xl mb-4">{currentConfig.emoji}</p>
               <button
                 onClick={() => setShowResult(false)}
                 className="px-6 py-2 bg-primary/20 hover:bg-primary/30 border border-primary/50 rounded-lg font-body text-lg text-primary transition-all"
@@ -235,18 +283,18 @@ const MysteryWheel = () => {
         )}
       </AnimatePresence>
 
-      {/* POI List */}
-      <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2 max-w-lg">
-        {POIS.map((poi) => (
+      {/* Item List */}
+      <div className={`mt-4 grid gap-2 max-w-lg ${wheelType === 'colors' ? 'grid-cols-5' : 'grid-cols-2 sm:grid-cols-3'}`}>
+        {items.map((item) => (
           <div
-            key={poi.name}
+            key={item.name}
             className="px-3 py-2 rounded-lg text-sm font-body flex items-center gap-2 bg-muted/50 border border-border hover:border-primary/50 transition-all"
           >
             <div
               className="w-3 h-3 rounded-full flex-shrink-0"
-              style={{ backgroundColor: poi.color }}
+              style={{ backgroundColor: item.color }}
             />
-            <span className="text-foreground/80 truncate">{poi.name}</span>
+            <span className="text-foreground/80 truncate">{item.name}</span>
           </div>
         ))}
       </div>
