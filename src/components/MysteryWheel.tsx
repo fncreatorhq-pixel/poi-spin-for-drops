@@ -37,15 +37,22 @@ const MysteryWheel = () => {
     // Pick a random segment to land on
     const randomSegment = Math.floor(Math.random() * POIS.length);
     
-    // Random spins between 5-10 full rotations
-    const spins = 5 + Math.random() * 5;
+    // Random full rotations (5-10)
+    const spins = Math.floor(5 + Math.random() * 5);
     
-    // Calculate rotation needed to land on the chosen segment
-    // Segments are drawn starting at -90° (top), going clockwise
-    // When wheel rotates clockwise by X degrees, segment at top was originally at position -X
-    // To get segment N at the top: rotate by (N * segmentAngle) + offset to center of segment
-    const targetRotation = randomSegment * segmentAngle + segmentAngle / 2;
-    const totalRotation = rotation + spins * 360 + targetRotation;
+    // Calculate the target normalized rotation to land on the CENTER of the chosen segment
+    // At rotation 0, segment 0's edge is at pointer. When wheel rotates clockwise, segments move right.
+    // To get segment N at pointer: rotate by ((POIS.length - N) % POIS.length) segments
+    // Add 0.5 segment to center it under the pointer
+    const k = (POIS.length - randomSegment) % POIS.length;
+    const targetNormalized = (k + 0.5) * segmentAngle;
+    
+    // Calculate how much more we need to rotate from current position to reach target
+    const currentNormalized = rotation % 360;
+    let additionalRotation = targetNormalized - currentNormalized;
+    if (additionalRotation <= 0) additionalRotation += 360; // Ensure forward spin
+    
+    const totalRotation = rotation + spins * 360 + additionalRotation;
     
     setRotation(totalRotation);
     
