@@ -163,11 +163,11 @@ const MysteryWheel = () => {
   };
 
   return (
-    <div className="relative flex flex-col items-center gap-8">
+    <div className="relative flex flex-col items-center gap-3">
       {/* Wheel Type Selector */}
-      <div className="absolute top-0 left-0 z-20">
+      <div className="z-20">
         <Select value={wheelType} onValueChange={handleWheelChange} disabled={isSpinning}>
-          <SelectTrigger className="w-[180px] bg-card border-primary/30 text-foreground">
+          <SelectTrigger className="w-[160px] bg-card border-primary/30 text-foreground text-sm">
             <SelectValue placeholder="Select wheel" />
           </SelectTrigger>
           <SelectContent className="bg-card border-primary/30">
@@ -178,12 +178,12 @@ const MysteryWheel = () => {
       </div>
 
       {/* Wheel Container */}
-      <div className="relative mt-12">
+      <div className="relative">
         {/* Outer glow ring */}
-        <div className="absolute inset-[-20px] rounded-full bg-gradient-to-r from-primary via-secondary to-accent opacity-30 blur-xl animate-pulse" />
+        <div className="absolute inset-[-15px] rounded-full bg-gradient-to-r from-primary via-secondary to-accent opacity-30 blur-xl animate-pulse" />
         
         {/* Wheel border */}
-        <div className="relative w-[400px] h-[400px] rounded-full p-2 bg-gradient-to-br from-primary/50 via-secondary/50 to-accent/50 box-glow">
+        <div className="relative w-[280px] h-[280px] md:w-[320px] md:h-[320px] rounded-full p-1.5 bg-gradient-to-br from-primary/50 via-secondary/50 to-accent/50 box-glow">
           <div className="w-full h-full rounded-full bg-card p-1">
             {/* The spinning wheel */}
             <div
@@ -235,7 +235,7 @@ const MysteryWheel = () => {
         onClick={spin}
         disabled={isSpinning}
         className={`
-          relative px-12 py-6 rounded-full font-display text-2xl font-bold uppercase tracking-wider
+          relative px-8 py-4 rounded-full font-display text-lg font-bold uppercase tracking-wider
           bg-gradient-to-br from-destructive to-red-700 text-destructive-foreground
           transition-all duration-300 transform
           ${isSpinning 
@@ -283,15 +283,15 @@ const MysteryWheel = () => {
         )}
       </AnimatePresence>
 
-      {/* Item List */}
-      <div className={`mt-4 grid gap-2 max-w-lg ${wheelType === 'colors' ? 'grid-cols-5' : 'grid-cols-2 sm:grid-cols-3'}`}>
+      {/* Item List - Hidden on small screens to fit viewport */}
+      <div className={`hidden sm:grid gap-1 max-w-md ${wheelType === 'colors' ? 'grid-cols-5' : 'grid-cols-3 md:grid-cols-4'}`}>
         {items.map((item) => (
           <div
             key={item.name}
-            className="px-3 py-2 rounded-lg text-sm font-body flex items-center gap-2 bg-muted/50 border border-border hover:border-primary/50 transition-all"
+            className="px-2 py-1 rounded text-xs font-body flex items-center gap-1.5 bg-muted/50 border border-border hover:border-primary/50 transition-all"
           >
             <div
-              className="w-3 h-3 rounded-full flex-shrink-0"
+              className="w-2 h-2 rounded-full flex-shrink-0"
               style={{ backgroundColor: item.color }}
             />
             <span className="text-foreground/80 truncate">{item.name}</span>
