@@ -32,21 +32,22 @@ const Index = () => {
             href="https://nordvpn.sjv.io/c/6550207/742889/7452" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="group w-full max-w-[728px] h-[90px] bg-gradient-to-r from-[hsl(220,80%,20%)] via-[hsl(240,70%,25%)] to-[hsl(260,60%,30%)] border border-primary/30 rounded-lg flex items-center overflow-hidden relative hover:scale-[1.02] transition-transform duration-300"
+            className="group w-full max-w-[728px] h-[90px] bg-gradient-to-r from-[hsl(220,80%,20%)] via-[hsl(240,70%,25%)] to-[hsl(260,60%,30%)] border border-primary/30 rounded-lg flex items-center justify-between px-6 overflow-hidden relative hover:scale-[1.02] transition-transform duration-300"
           >
             {/* Background glow effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             
-            {/* NordVPN Logo - centered in left section */}
-            <div className="w-1/4 flex items-center justify-center relative z-10">
-              <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-white via-[hsl(210,30%,95%)] to-[hsl(220,40%,90%)] flex items-center justify-center shadow-lg shadow-[hsl(220,80%,50%)]/40 p-2 md:p-2.5 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-tr from-[hsl(200,100%,85%)/0.4] via-transparent to-[hsl(240,60%,90%)/0.3]" />
+            {/* NordVPN Logo */}
+            <div className="flex-shrink-0 relative z-10">
+              <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-white via-white to-[hsl(200,60%,95%)] flex items-center justify-center shadow-lg shadow-[hsl(220,80%,50%)]/40 p-2 md:p-2.5 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[conic-gradient(from_0deg,_hsl(350,80%,92%),_hsl(200,70%,92%),_hsl(280,60%,93%),_hsl(120,50%,93%),_hsl(40,70%,93%),_hsl(350,80%,92%))] opacity-40" />
+                <div className="absolute inset-0 bg-white/60" />
                 <img src={nordvpnLogo} alt="NordVPN" className="w-8 h-8 md:w-9 md:h-9 object-contain relative z-10" />
               </div>
             </div>
             
-            {/* Text content - centered in middle section */}
-            <div className="flex-1 text-center relative z-10">
+            {/* Text content */}
+            <div className="flex-1 text-center px-4 relative z-10">
               <p className="text-white font-display text-sm md:text-lg font-bold leading-tight">
                 Stop second guessing yourself.
               </p>
@@ -55,15 +56,13 @@ const Index = () => {
               </p>
             </div>
             
-            {/* CTA Button - right section */}
-            <div className="w-1/4 flex items-center justify-center relative z-10">
-              <div className="flex items-center gap-2 md:gap-3">
-                <span className="text-[hsl(45,100%,60%)] font-display font-bold text-xs md:text-sm whitespace-nowrap">
-                  Save 80%
-                </span>
-                <div className="bg-gradient-to-r from-[hsl(160,100%,40%)] to-[hsl(180,100%,35%)] text-white font-display font-bold text-xs md:text-sm px-4 md:px-6 py-2 md:py-2.5 rounded-full shadow-lg shadow-[hsl(160,100%,40%)]/30 group-hover:shadow-[hsl(160,100%,40%)]/50 transition-shadow duration-300">
-                  Get Deal →
-                </div>
+            {/* CTA Button */}
+            <div className="flex-shrink-0 relative z-10 flex items-center gap-2 md:gap-3">
+              <span className="text-[hsl(45,100%,60%)] font-display font-bold text-xs md:text-sm whitespace-nowrap">
+                Save 80%
+              </span>
+              <div className="bg-gradient-to-r from-[hsl(160,100%,40%)] to-[hsl(180,100%,35%)] text-white font-display font-bold text-xs md:text-sm px-4 md:px-6 py-2 md:py-2.5 rounded-full shadow-lg shadow-[hsl(160,100%,40%)]/30 group-hover:shadow-[hsl(160,100%,40%)]/50 transition-shadow duration-300">
+                Get Deal →
               </div>
             </div>
           </a>
