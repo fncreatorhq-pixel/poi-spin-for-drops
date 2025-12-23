@@ -36,13 +36,43 @@ const Index = () => {
             <MysteryWheel />
           </main>
 
-          {/* Bottom Ad Space */}
-          <div className="mt-2 flex justify-center">
-            <div className="w-full max-w-[728px] h-[90px] bg-muted/30 border border-border/50 rounded-lg flex items-center justify-center">
-              <span className="text-muted-foreground/40 text-xs font-body uppercase tracking-wider">
-                Ad Space (728x90)
-              </span>
-            </div>
+          {/* NordVPN Banner */}
+          <div className="mt-2 flex justify-center px-2">
+            <a 
+              href="https://nordvpn.sjv.io/c/6550207/742889/7452" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="group w-full max-w-[728px] h-[90px] bg-gradient-to-r from-[hsl(220,80%,20%)] via-[hsl(240,70%,25%)] to-[hsl(260,60%,30%)] border border-primary/30 rounded-lg flex items-center justify-between px-6 overflow-hidden relative hover:scale-[1.02] transition-transform duration-300"
+            >
+              {/* Background glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              {/* Shield icon */}
+              <div className="flex-shrink-0 relative z-10">
+                <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-[hsl(200,100%,50%)] to-[hsl(220,100%,40%)] flex items-center justify-center shadow-lg shadow-primary/30">
+                  <svg className="w-6 h-6 md:w-8 md:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                  </svg>
+                </div>
+              </div>
+              
+              {/* Text content */}
+              <div className="flex-1 text-center px-4 relative z-10">
+                <p className="text-white font-display text-sm md:text-lg font-bold leading-tight">
+                  Stop second guessing yourself.
+                </p>
+                <p className="text-[hsl(200,100%,70%)] font-body text-xs md:text-sm mt-0.5">
+                  NordVPN works holidays as well. 🎄
+                </p>
+              </div>
+              
+              {/* CTA Button */}
+              <div className="flex-shrink-0 relative z-10">
+                <div className="bg-gradient-to-r from-[hsl(160,100%,40%)] to-[hsl(180,100%,35%)] text-white font-display font-bold text-xs md:text-sm px-4 md:px-6 py-2 md:py-2.5 rounded-full shadow-lg shadow-[hsl(160,100%,40%)]/30 group-hover:shadow-[hsl(160,100%,40%)]/50 transition-shadow duration-300">
+                  Get Deal →
+                </div>
+              </div>
+            </a>
           </div>
         </div>
 
