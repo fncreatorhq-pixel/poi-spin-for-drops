@@ -67,7 +67,10 @@ const Index = () => {
               </div>
               
               {/* CTA Button */}
-              <div className="flex-shrink-0 relative z-10">
+              <div className="flex-shrink-0 relative z-10 flex items-center gap-2 md:gap-3">
+                <span className="text-[hsl(45,100%,60%)] font-display font-bold text-xs md:text-sm whitespace-nowrap">
+                  Save 80%
+                </span>
                 <div className="bg-gradient-to-r from-[hsl(160,100%,40%)] to-[hsl(180,100%,35%)] text-white font-display font-bold text-xs md:text-sm px-4 md:px-6 py-2 md:py-2.5 rounded-full shadow-lg shadow-[hsl(160,100%,40%)]/30 group-hover:shadow-[hsl(160,100%,40%)]/50 transition-shadow duration-300">
                   Get Deal →
                 </div>
