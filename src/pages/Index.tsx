@@ -39,9 +39,9 @@ const Index = () => {
             
             {/* NordVPN Logo */}
             <div className="flex-shrink-0 relative z-10">
-              <div className="w-[72px] h-[72px] md:w-20 md:h-20 rounded-full bg-gradient-to-br from-white via-[hsl(210,30%,95%)] to-[hsl(220,40%,90%)] flex items-center justify-center shadow-lg shadow-[hsl(220,80%,50%)]/40 p-3 md:p-4 relative overflow-hidden">
+              <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-white via-[hsl(210,30%,95%)] to-[hsl(220,40%,90%)] flex items-center justify-center shadow-lg shadow-[hsl(220,80%,50%)]/40 p-2 md:p-2.5 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-tr from-[hsl(200,100%,85%)/0.4] via-transparent to-[hsl(240,60%,90%)/0.3]" />
-                <img src={nordvpnLogo} alt="NordVPN" className="w-9 h-9 md:w-10 md:h-10 object-contain relative z-10" />
+                <img src={nordvpnLogo} alt="NordVPN" className="w-8 h-8 md:w-9 md:h-9 object-contain relative z-10" />
               </div>
             </div>
             
