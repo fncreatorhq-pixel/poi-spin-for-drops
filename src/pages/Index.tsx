@@ -1,4 +1,5 @@
 import MysteryWheel from '@/components/MysteryWheel';
+import nordvpnLogo from '@/assets/nordvpn-logo.png';
 
 const Index = () => {
   return (
@@ -36,12 +37,10 @@ const Index = () => {
             {/* Background glow effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             
-            {/* Shield icon */}
+            {/* NordVPN Logo */}
             <div className="flex-shrink-0 relative z-10">
-              <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-[hsl(200,100%,50%)] to-[hsl(220,100%,40%)] flex items-center justify-center shadow-lg shadow-primary/30">
-                <svg className="w-6 h-6 md:w-8 md:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
-                </svg>
+              <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white flex items-center justify-center shadow-lg shadow-primary/30 p-1.5">
+                <img src={nordvpnLogo} alt="NordVPN" className="w-full h-full object-contain" />
               </div>
             </div>
             
