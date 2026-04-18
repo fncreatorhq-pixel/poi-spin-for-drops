@@ -17,7 +17,7 @@ const Index = () => {
             MYSTERY WHEEL
           </h1>
           <p className="text-sm md:text-base font-body text-muted-foreground">
-            Fortnite Chapter 7 Season 1 — Pacific Break
+            Fortnite Chapter 7 Season 2 — Showdown
           </p>
         </header>
 
