@@ -15,15 +15,16 @@ const POIS = [
   { name: 'Wonkeeland', color: 'hsl(320, 100%, 55%)' },
   { name: 'Tiptop Terrace', color: 'hsl(25, 100%, 50%)' },
   { name: 'Painted Palms', color: 'hsl(150, 100%, 45%)' },
-  { name: 'Bumpy Bay', color: 'hsl(280, 100%, 55%)' },
-  { name: 'Innoloop Labs', color: 'hsl(50, 100%, 50%)' },
+  { name: 'Squibbly Shores', color: 'hsl(280, 100%, 55%)' },
+  { name: 'Dark Dominion', color: 'hsl(50, 100%, 50%)' },
   { name: 'Sandy Strip', color: 'hsl(35, 100%, 55%)' },
   { name: 'Fore Fields', color: 'hsl(120, 80%, 45%)' },
   { name: 'Humble Hills', color: 'hsl(200, 100%, 50%)' },
   { name: 'Ripped Tides', color: 'hsl(340, 100%, 55%)' },
-  { name: 'Sus Studios', color: 'hsl(0, 100%, 50%)' },
+  { name: 'Sub Studios', color: 'hsl(0, 100%, 50%)' },
   { name: 'Battlewood Blvd', color: 'hsl(260, 100%, 55%)' },
-  { name: 'Classified Canyon', color: 'hsl(170, 100%, 45%)' },
+  { name: 'New Sanctuary', color: 'hsl(170, 100%, 45%)' },
+  { name: 'Frigid Fortress', color: 'hsl(210, 90%, 70%)' },
 ];
 
 const COLORS = [
