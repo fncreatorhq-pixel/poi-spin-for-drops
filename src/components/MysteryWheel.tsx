@@ -35,6 +35,23 @@ const COLORS = [
   { name: 'Gold', color: 'hsl(45, 100%, 50%)' },
 ];
 
+const EMOTES = [
+  'Floss',
+  'Take the L',
+  'Default Dance',
+  'Orange Justice',
+  'Best Mates',
+  'Electro Shuffle',
+  'Hype',
+  'Boogie Down',
+  'Fresh',
+  'Wiggle',
+  'Ride the Pony',
+  'Laugh It Up',
+  'Disco Fever',
+  'Llama Bell',
+];
+
 const WHEEL_CONFIG = {
   pois: {
     label: 'Drop Location',
@@ -55,6 +72,8 @@ const MysteryWheel = () => {
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [bonusColor, setBonusColor] = useState<{ name: string; color: string } | null>(null);
+  const [bonusEmote, setBonusEmote] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const wheelRef = useRef<HTMLDivElement>(null);
 
@@ -101,6 +120,16 @@ const MysteryWheel = () => {
       const landedIndex = Math.floor(landedNormalized / segmentAngle) % items.length;
 
       setSelectedItem(items[landedIndex].name);
+
+      // Bonus challenges only when spinning the drop-location wheel
+      if (wheelType === 'pois') {
+        setBonusColor(COLORS[Math.floor(Math.random() * COLORS.length)]);
+        setBonusEmote(EMOTES[Math.floor(Math.random() * EMOTES.length)]);
+      } else {
+        setBonusColor(null);
+        setBonusEmote(null);
+      }
+
       setShowResult(true);
     }, 5000);
   };
@@ -273,6 +302,32 @@ const MysteryWheel = () => {
                 {selectedItem}
               </h2>
               <p className="text-6xl mb-4">{currentConfig.emoji}</p>
+
+              {bonusColor && bonusEmote && (
+                <div className="mb-4 space-y-3 border-t border-primary/30 pt-4">
+                  <div>
+                    <p className="text-muted-foreground font-body text-sm mb-1">First kill weapon color:</p>
+                    <div className="flex items-center justify-center gap-2">
+                      <div
+                        className="w-5 h-5 rounded-full border border-border"
+                        style={{ backgroundColor: bonusColor.color }}
+                      />
+                      <span className="text-2xl font-display font-bold text-secondary text-glow">
+                        {bonusColor.name}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground font-body text-sm mb-1">
+                      Emote after kill (or it doesn't count!):
+                    </p>
+                    <span className="text-2xl font-display font-bold text-accent text-glow">
+                      🕺 {bonusEmote}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <button
                 onClick={() => setShowResult(false)}
                 className="px-6 py-2 bg-primary/20 hover:bg-primary/30 border border-primary/50 rounded-lg font-body text-lg text-primary transition-all"
