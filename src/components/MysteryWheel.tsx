@@ -343,8 +343,6 @@ const MysteryWheel = () => {
         </AnimatePresence>
       </motion.div>
 
-      </AnimatePresence>
-
       {/* Item List - Hidden on small screens to fit viewport */}
       <div className={`hidden sm:grid gap-1 max-w-md ${wheelType === 'colors' ? 'grid-cols-5' : 'grid-cols-3 md:grid-cols-4'}`}>
         {items.map((item) => (
