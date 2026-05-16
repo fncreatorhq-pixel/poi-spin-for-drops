@@ -28,11 +28,12 @@ const POIS = [
 ];
 
 const COLORS = [
-  { name: 'White', color: 'hsl(0, 0%, 95%)' },
+  { name: 'Gray', color: 'hsl(0, 0%, 70%)' },
   { name: 'Green', color: 'hsl(120, 70%, 45%)' },
   { name: 'Blue', color: 'hsl(210, 100%, 50%)' },
   { name: 'Purple', color: 'hsl(270, 70%, 55%)' },
   { name: 'Gold', color: 'hsl(45, 100%, 50%)' },
+  { name: 'Mythic', color: 'hsl(35, 100%, 55%)' },
 ];
 
 const EMOTES = [
@@ -158,7 +159,7 @@ const MysteryWheel = () => {
       const textY = 50 + textRadius * Math.sin(midRad);
 
       // For color wheel, check if text should be dark
-      const isLightColor = item.name === 'White' || item.name === 'Gold';
+      const isLightColor = item.name === 'Gray' || item.name === 'Gold';
       const textColor = isLightColor ? 'hsl(230, 25%, 15%)' : 'white';
       
       return (
