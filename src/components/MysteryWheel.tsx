@@ -159,7 +159,7 @@ const MysteryWheel = () => {
       const textY = 50 + textRadius * Math.sin(midRad);
 
       // For color wheel, check if text should be dark
-      const isLightColor = item.name === 'White' || item.name === 'Gold';
+      const isLightColor = item.name === 'Gray' || item.name === 'Gold';
       const textColor = isLightColor ? 'hsl(230, 25%, 15%)' : 'white';
       
       return (
