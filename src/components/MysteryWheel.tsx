@@ -261,84 +261,87 @@ const MysteryWheel = () => {
         </div>
       </div>
 
-      {/* Spin Button */}
-      <button
-        onClick={spin}
-        disabled={isSpinning}
-        className={`
-          relative px-8 py-4 rounded-full font-display text-lg font-bold uppercase tracking-wider
-          bg-gradient-to-br from-destructive to-red-700 text-destructive-foreground
-          transition-all duration-300 transform
-          ${isSpinning 
-            ? 'opacity-50 cursor-not-allowed scale-95' 
-            : 'hover:scale-105 active:scale-95 animate-pulse-glow cursor-pointer'}
-        `}
+      {/* Spin Button / Result Card */}
+      <motion.div
+        layout
+        transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+        className="relative"
       >
-        <span className="relative z-10 drop-shadow-lg">
-          {isSpinning ? 'Spinning...' : wheelType === 'pois' ? '🎯 SPIN TO DROP' : '🎨 SPIN FOR COLOR'}
-        </span>
-        {!isSpinning && (
-          <div className="absolute inset-0 rounded-full bg-gradient-to-t from-transparent to-white/20" />
-        )}
-      </button>
-
-      {/* Result Display */}
-      <AnimatePresence>
-        {showResult && selectedItem && (
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            className="fixed inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-50"
-            onClick={() => setShowResult(false)}
-          >
+        <AnimatePresence mode="wait" initial={false}>
+          {showResult && selectedItem ? (
             <motion.div
-              initial={{ y: 50 }}
-              animate={{ y: 0 }}
-              className="bg-gradient-to-br from-card to-muted p-8 rounded-2xl border border-primary/50 box-glow text-center max-w-md mx-4"
-              onClick={(e) => e.stopPropagation()}
+              key="result-card"
+              layout
+              initial={{ rotate: 720, scale: 0.3, opacity: 0 }}
+              animate={{ rotate: 0, scale: 1, opacity: 1 }}
+              exit={{ scale: 0.3, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 120, damping: 14, duration: 0.8 }}
+              onClick={() => setShowResult(false)}
+              className="cursor-pointer bg-gradient-to-br from-card to-muted px-8 py-6 rounded-2xl border-2 border-primary box-glow text-center max-w-lg"
+              style={{ boxShadow: '0 0 40px hsl(var(--primary) / 0.6), 0 0 80px hsl(var(--accent) / 0.4)' }}
             >
-              <p className="text-muted-foreground font-body text-lg mb-2">{currentConfig.resultPrefix}</p>
-              <h2 className="text-4xl font-display font-bold text-primary text-glow mb-4">
+              <p className="text-muted-foreground font-body text-base md:text-lg mb-1">{currentConfig.resultPrefix}</p>
+              <h2 className="text-5xl md:text-6xl font-display font-bold text-primary text-glow mb-2">
                 {selectedItem}
               </h2>
-              <p className="text-6xl mb-4">{currentConfig.emoji}</p>
+              <p className="text-5xl md:text-6xl mb-2">{currentConfig.emoji}</p>
 
               {bonusColor && bonusEmote && (
-                <div className="mb-4 space-y-3 border-t border-primary/30 pt-4">
+                <div className="mt-3 space-y-2 border-t border-primary/30 pt-3">
                   <div>
-                    <p className="text-muted-foreground font-body text-sm mb-1">First kill weapon color:</p>
+                    <p className="text-muted-foreground font-body text-xs md:text-sm mb-1">First kill weapon color:</p>
                     <div className="flex items-center justify-center gap-2">
                       <div
                         className="w-5 h-5 rounded-full border border-border"
                         style={{ backgroundColor: bonusColor.color }}
                       />
-                      <span className="text-2xl font-display font-bold text-secondary text-glow">
+                      <span className="text-xl md:text-2xl font-display font-bold text-secondary text-glow">
                         {bonusColor.name}
                       </span>
                     </div>
                   </div>
                   <div>
-                    <p className="text-muted-foreground font-body text-sm mb-1">
+                    <p className="text-muted-foreground font-body text-xs md:text-sm mb-1">
                       Emote after kill (or it doesn't count!):
                     </p>
-                    <span className="text-2xl font-display font-bold text-accent text-glow">
+                    <span className="text-xl md:text-2xl font-display font-bold text-accent text-glow">
                       🕺 {bonusEmote}
                     </span>
                   </div>
                 </div>
               )}
-
-              <button
-                onClick={() => setShowResult(false)}
-                className="px-6 py-2 bg-primary/20 hover:bg-primary/30 border border-primary/50 rounded-lg font-body text-lg text-primary transition-all"
-              >
-                Got it!
-              </button>
+              <p className="text-xs text-muted-foreground mt-3 italic">Tap to spin again</p>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          ) : (
+            <motion.button
+              key="spin-button"
+              layout
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.3, opacity: 0, rotate: 360 }}
+              transition={{ duration: 0.3 }}
+              onClick={spin}
+              disabled={isSpinning}
+              className={`
+                relative px-8 py-4 rounded-full font-display text-lg font-bold uppercase tracking-wider
+                bg-gradient-to-br from-destructive to-red-700 text-destructive-foreground
+                transform
+                ${isSpinning
+                  ? 'cursor-not-allowed animate-pulse-glow'
+                  : 'hover:scale-105 active:scale-95 animate-pulse-glow cursor-pointer'}
+              `}
+              style={isSpinning ? { boxShadow: '0 0 30px hsl(var(--accent) / 0.9), 0 0 60px hsl(var(--primary) / 0.6)' } : undefined}
+            >
+              <span className="relative z-10 drop-shadow-lg inline-block" style={isSpinning ? { animation: 'spin 1s linear infinite' } : undefined}>
+                {isSpinning ? '🌀' : wheelType === 'pois' ? '🎯 SPIN TO DROP' : '🎨 SPIN FOR COLOR'}
+              </span>
+              {!isSpinning && (
+                <div className="absolute inset-0 rounded-full bg-gradient-to-t from-transparent to-white/20" />
+              )}
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* Item List - Hidden on small screens to fit viewport */}
       <div className={`hidden sm:grid gap-1 max-w-md ${wheelType === 'colors' ? 'grid-cols-5' : 'grid-cols-3 md:grid-cols-4'}`}>
