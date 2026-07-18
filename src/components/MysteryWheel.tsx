@@ -157,6 +157,7 @@ const MysteryWheel = () => {
     setRotation(0);
     setTimeLeft(TIMER_SECONDS);
     setChatState('collecting');
+    setPoiMode('collecting');
 
     // Timer
     timerRef.current = window.setInterval(() => {
