@@ -62,11 +62,6 @@ const COLORS = [
   { name: 'Mythic', color: 'hsl(35, 100%, 55%)' },
 ];
 
-const EMOTES = [
-  'Floss', 'Take the L', 'Default Dance', 'Orange Justice', 'Best Mates',
-  'Electro Shuffle', 'Hype', 'Boogie Down', 'Fresh', 'Wiggle',
-  'Ride the Pony', 'Laugh It Up', 'Disco Fever', 'Llama Bell',
-];
 
 type Slot = { name: string; color: string; user?: string; placeholder?: boolean };
 
@@ -86,7 +81,6 @@ const MysteryWheel = () => {
   const [rotation, setRotation] = useState(0);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [bonusColor, setBonusColor] = useState<{ name: string; color: string } | null>(null);
-  const [bonusEmote, setBonusEmote] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
 
   // Chat integration state (POI wheel only)
@@ -264,10 +258,8 @@ const MysteryWheel = () => {
       setSelectedItem(items[landedIndex].name);
       if (wheelType === 'pois') {
         setBonusColor(COLORS[Math.floor(Math.random() * COLORS.length)]);
-        setBonusEmote(EMOTES[Math.floor(Math.random() * EMOTES.length)]);
       } else {
         setBonusColor(null);
-        setBonusEmote(null);
       }
       setShowResult(true);
     }, 5000);
@@ -478,7 +470,7 @@ const MysteryWheel = () => {
                 {selectedItem}
               </h2>
               <p className="text-4xl mb-1">{wheelType === 'pois' ? '🪂' : '🎨'}</p>
-              {bonusColor && bonusEmote && (
+              {bonusColor && (
                 <div className="mt-2 space-y-1 border-t border-primary/30 pt-2">
                   <div>
                     <p className="text-muted-foreground text-xs mb-0.5">First kill weapon color:</p>
@@ -486,10 +478,6 @@ const MysteryWheel = () => {
                       <div className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: bonusColor.color }} />
                       <span className="text-lg font-display font-bold text-secondary text-glow">{bonusColor.name}</span>
                     </div>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-xs mb-0.5">Emote after kill (or it doesn't count!):</p>
-                    <span className="text-lg font-display font-bold text-accent text-glow">🕺 {bonusEmote}</span>
                   </div>
                 </div>
               )}
