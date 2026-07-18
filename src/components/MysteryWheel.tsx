@@ -13,6 +13,7 @@ import { TwitchChatClient } from '@/lib/twitchChat';
 
 type WheelType = 'pois' | 'colors';
 type ChatState = 'closed' | 'collecting';
+type PoiMode = 'idle' | 'collecting' | 'ready';
 
 // Current season: Chapter 7 Season 3 "Runners" (2026)
 const CURRENT_SEASON_POIS = [
