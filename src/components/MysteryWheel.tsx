@@ -210,6 +210,7 @@ const MysteryWheel = () => {
     suggestionsRef.current = [];
     setPoiSlots(buildDefaultPoiSlots());
     setChatState('closed');
+    setPoiMode('idle');
     setTimeLeft(TIMER_SECONDS);
   }, [stopTwitch, stopTimer]);
 
