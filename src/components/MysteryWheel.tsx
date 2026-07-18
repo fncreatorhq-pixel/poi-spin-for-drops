@@ -178,16 +178,19 @@ const MysteryWheel = () => {
         if (!trimmed.toLowerCase().startsWith(COMMAND)) return;
         const suggestion = trimmed.substring(COMMAND.length).trim();
         if (!suggestion) return;
-        // Cap 40 chars
-        const clean = suggestion.substring(0, 40);
-        // Dedup: one suggestion per user, and unique names (case-insensitive)
+        // Only accept real POIs from the current season (case-insensitive match)
+        const matched = CURRENT_SEASON_POIS.find(
+          (p) => p.toLowerCase() === suggestion.toLowerCase(),
+        );
+        if (!matched) return;
+        // Dedup: one suggestion per user, and unique POIs
         const existing = suggestionsRef.current;
         if (existing.length >= TOTAL_SLOTS) return;
         if (existing.some((s) => s.user?.toLowerCase() === username.toLowerCase())) return;
-        if (existing.some((s) => s.name.toLowerCase() === clean.toLowerCase())) return;
+        if (existing.some((s) => s.name.toLowerCase() === matched.toLowerCase())) return;
         const nextIndex = existing.length;
         const newSlot: Slot = {
-          name: clean,
+          name: matched,
           color: PALETTE[nextIndex % PALETTE.length],
           user: username,
         };
@@ -493,16 +496,26 @@ const MysteryWheel = () => {
               <p className="text-xs text-muted-foreground mt-2 italic">Tap to spin again</p>
             </motion.div>
           ) : collecting ? (
-            <motion.button
+            <motion.div
               key="cancel-button"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.3, opacity: 0 }}
-              onClick={cancelCollection}
-              className="px-6 py-3 rounded-full font-display text-base font-bold uppercase tracking-wider bg-muted text-foreground hover:bg-muted/80 border border-border"
+              className="flex flex-col items-center gap-1"
             >
-              ✋ Cancel
-            </motion.button>
+              <button
+                onClick={cancelCollection}
+                className="px-6 py-3 rounded-full font-display text-base font-bold uppercase tracking-wider bg-muted text-foreground hover:bg-muted/80 border border-border"
+              >
+                ✋ Cancel
+              </button>
+              <button
+                onClick={closeCollection}
+                className="text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline bg-transparent border-0 p-0"
+              >
+                end suggestion window
+              </button>
+            </motion.div>
           ) : (
             (() => {
               const isPoi = wheelType === 'pois';
