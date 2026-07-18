@@ -444,7 +444,15 @@ const MysteryWheel = () => {
               animate={{ rotate: 0, scale: 1, opacity: 1 }}
               exit={{ scale: 0.3, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 120, damping: 14, duration: 0.8 }}
-              onClick={() => setShowResult(false)}
+              onClick={() => {
+                setShowResult(false);
+                if (wheelType === 'pois') {
+                  setPoiMode('idle');
+                  setPoiSlots(buildDefaultPoiSlots());
+                  suggestionsRef.current = [];
+                  setRotation(0);
+                }
+              }}
               className="cursor-pointer bg-gradient-to-br from-card to-muted px-8 py-5 rounded-2xl border-2 border-primary box-glow text-center max-w-lg"
               style={{ boxShadow: '0 0 40px hsl(var(--primary) / 0.6), 0 0 80px hsl(var(--accent) / 0.4)' }}
             >
