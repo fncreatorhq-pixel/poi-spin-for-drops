@@ -178,16 +178,19 @@ const MysteryWheel = () => {
         if (!trimmed.toLowerCase().startsWith(COMMAND)) return;
         const suggestion = trimmed.substring(COMMAND.length).trim();
         if (!suggestion) return;
-        // Cap 40 chars
-        const clean = suggestion.substring(0, 40);
-        // Dedup: one suggestion per user, and unique names (case-insensitive)
+        // Only accept real POIs from the current season (case-insensitive match)
+        const matched = CURRENT_SEASON_POIS.find(
+          (p) => p.toLowerCase() === suggestion.toLowerCase(),
+        );
+        if (!matched) return;
+        // Dedup: one suggestion per user, and unique POIs
         const existing = suggestionsRef.current;
         if (existing.length >= TOTAL_SLOTS) return;
         if (existing.some((s) => s.user?.toLowerCase() === username.toLowerCase())) return;
-        if (existing.some((s) => s.name.toLowerCase() === clean.toLowerCase())) return;
+        if (existing.some((s) => s.name.toLowerCase() === matched.toLowerCase())) return;
         const nextIndex = existing.length;
         const newSlot: Slot = {
-          name: clean,
+          name: matched,
           color: PALETTE[nextIndex % PALETTE.length],
           user: username,
         };
