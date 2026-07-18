@@ -142,6 +142,7 @@ const MysteryWheel = () => {
     }
     setPoiSlots(filled);
     setChatState('closed');
+    setPoiMode('ready');
   }, [stopTwitch, stopTimer]);
 
   const startCollection = useCallback(() => {
