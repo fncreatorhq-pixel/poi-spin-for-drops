@@ -496,16 +496,26 @@ const MysteryWheel = () => {
               <p className="text-xs text-muted-foreground mt-2 italic">Tap to spin again</p>
             </motion.div>
           ) : collecting ? (
-            <motion.button
+            <motion.div
               key="cancel-button"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.3, opacity: 0 }}
-              onClick={cancelCollection}
-              className="px-6 py-3 rounded-full font-display text-base font-bold uppercase tracking-wider bg-muted text-foreground hover:bg-muted/80 border border-border"
+              className="flex flex-col items-center gap-1"
             >
-              ✋ Cancel
-            </motion.button>
+              <button
+                onClick={cancelCollection}
+                className="px-6 py-3 rounded-full font-display text-base font-bold uppercase tracking-wider bg-muted text-foreground hover:bg-muted/80 border border-border"
+              >
+                ✋ Cancel
+              </button>
+              <button
+                onClick={closeCollection}
+                className="text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline bg-transparent border-0 p-0"
+              >
+                end suggestion window
+              </button>
+            </motion.div>
           ) : (
             (() => {
               const isPoi = wheelType === 'pois';
