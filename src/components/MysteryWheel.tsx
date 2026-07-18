@@ -13,6 +13,7 @@ import { TwitchChatClient } from '@/lib/twitchChat';
 
 type WheelType = 'pois' | 'colors';
 type ChatState = 'closed' | 'collecting';
+type PoiMode = 'idle' | 'collecting' | 'ready';
 
 // Current season: Chapter 7 Season 3 "Runners" (2026)
 const CURRENT_SEASON_POIS = [
@@ -94,6 +95,7 @@ const MysteryWheel = () => {
   );
   const [channelInput, setChannelInput] = useState(twitchChannel);
   const [chatState, setChatState] = useState<ChatState>('closed');
+  const [poiMode, setPoiMode] = useState<PoiMode>('idle');
   const [poiSlots, setPoiSlots] = useState<Slot[]>(buildDefaultPoiSlots());
   const [timeLeft, setTimeLeft] = useState(TIMER_SECONDS);
   const [twitchStatus, setTwitchStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected');
@@ -140,6 +142,7 @@ const MysteryWheel = () => {
     }
     setPoiSlots(filled);
     setChatState('closed');
+    setPoiMode('ready');
   }, [stopTwitch, stopTimer]);
 
   const startCollection = useCallback(() => {
@@ -154,6 +157,7 @@ const MysteryWheel = () => {
     setRotation(0);
     setTimeLeft(TIMER_SECONDS);
     setChatState('collecting');
+    setPoiMode('collecting');
 
     // Timer
     timerRef.current = window.setInterval(() => {
@@ -206,6 +210,7 @@ const MysteryWheel = () => {
     suggestionsRef.current = [];
     setPoiSlots(buildDefaultPoiSlots());
     setChatState('closed');
+    setPoiMode('idle');
     setTimeLeft(TIMER_SECONDS);
   }, [stopTwitch, stopTimer]);
 
@@ -439,7 +444,15 @@ const MysteryWheel = () => {
               animate={{ rotate: 0, scale: 1, opacity: 1 }}
               exit={{ scale: 0.3, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 120, damping: 14, duration: 0.8 }}
-              onClick={() => setShowResult(false)}
+              onClick={() => {
+                setShowResult(false);
+                if (wheelType === 'pois') {
+                  setPoiMode('idle');
+                  setPoiSlots(buildDefaultPoiSlots());
+                  suggestionsRef.current = [];
+                  setRotation(0);
+                }
+              }}
               className="cursor-pointer bg-gradient-to-br from-card to-muted px-8 py-5 rounded-2xl border-2 border-primary box-glow text-center max-w-lg"
               style={{ boxShadow: '0 0 40px hsl(var(--primary) / 0.6), 0 0 80px hsl(var(--accent) / 0.4)' }}
             >
@@ -479,18 +492,37 @@ const MysteryWheel = () => {
               ✋ Cancel
             </motion.button>
           ) : (
-            <motion.div
-              key="idle-buttons"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.3, opacity: 0 }}
-              className="flex flex-col items-center gap-2"
-            >
-              {wheelType === 'pois' && (
-                <button
-                  onClick={startCollection}
-                  disabled={!twitchChannel}
-                  title={!twitchChannel ? 'Set your Twitch channel first' : 'Open chat suggestions'}
+            (() => {
+              const isPoi = wheelType === 'pois';
+              const showSpin = isPoi ? poiMode === 'ready' : true;
+              const disabled = isPoi
+                ? (poiMode === 'idle' ? !twitchChannel : (isSpinning || hasPlaceholders))
+                : isSpinning;
+              const onClick = () => {
+                if (isSpinning) return;
+                if (!isPoi) return spin();
+                if (poiMode === 'idle') return startCollection();
+                if (poiMode === 'ready') return spin();
+              };
+              const label = isSpinning
+                ? '🌀 SPINNING…'
+                : showSpin
+                ? (isPoi ? '🎯 SPIN THE WHEEL!' : '🎨 SPIN FOR COLOR')
+                : "🚨 LET'S GO!";
+              const sublabel = isPoi && poiMode === 'idle'
+                ? `Open chat for ${TIMER_SECONDS / 60} min`
+                : isPoi && poiMode === 'ready'
+                ? 'Board locked — spin it!'
+                : null;
+              return (
+                <motion.button
+                  key="main-red-button"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.3, opacity: 0 }}
+                  onClick={onClick}
+                  disabled={disabled}
+                  title={isPoi && poiMode === 'idle' && !twitchChannel ? 'Set your Twitch channel first' : undefined}
                   className={`
                     relative px-10 py-4 rounded-full font-display text-xl font-bold uppercase tracking-wider
                     bg-gradient-to-br from-destructive to-red-700 text-destructive-foreground
@@ -499,25 +531,17 @@ const MysteryWheel = () => {
                   `}
                   style={{ boxShadow: '0 0 25px hsl(var(--destructive) / 0.7), 0 0 50px hsl(var(--destructive) / 0.4)' }}
                 >
-                  🚨 LET'S GO!
-                  <span className="block text-xs font-body normal-case tracking-normal opacity-90 mt-0.5">
-                    Open chat for {TIMER_SECONDS / 60} min
+                  <span className="inline-block" style={isSpinning ? { animation: 'spin 1s linear infinite' } : undefined}>
+                    {label}
                   </span>
-                </button>
-              )}
-              <button
-                onClick={spin}
-                disabled={isSpinning || hasPlaceholders}
-                className={`
-                  relative px-8 py-3 rounded-full font-display text-base font-bold uppercase tracking-wider
-                  bg-gradient-to-br from-primary to-secondary text-primary-foreground
-                  transform hover:scale-105 active:scale-95
-                  disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100
-                `}
-              >
-                {isSpinning ? '🌀 Spinning…' : wheelType === 'pois' ? '🎯 Spin the wheel' : '🎨 Spin for color'}
-              </button>
-            </motion.div>
+                  {sublabel && (
+                    <span className="block text-xs font-body normal-case tracking-normal opacity-90 mt-0.5">
+                      {sublabel}
+                    </span>
+                  )}
+                </motion.button>
+              );
+            })()
           )}
         </AnimatePresence>
       </motion.div>
