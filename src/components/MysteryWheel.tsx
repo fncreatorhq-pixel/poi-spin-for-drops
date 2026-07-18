@@ -364,14 +364,26 @@ const MysteryWheel = () => {
             {twitchChannel && (
               <span
                 className={`text-xs ${
-                  twitchStatus === 'connected'
+                  chatState !== 'collecting'
+                    ? 'text-muted-foreground'
+                    : twitchStatus === 'connected'
                     ? 'text-green-400'
                     : twitchStatus === 'connecting'
                     ? 'text-yellow-400'
-                    : 'text-muted-foreground'
+                    : 'text-red-400'
                 }`}
+                title={
+                  chatState !== 'collecting'
+                    ? 'Chat listener starts when you press LET\u2019S GO!'
+                    : `Chat listener: ${twitchStatus}`
+                }
               >
-                ● {twitchStatus}
+                ●{' '}
+                {chatState !== 'collecting'
+                  ? 'ready'
+                  : twitchStatus === 'connected'
+                  ? 'listening'
+                  : twitchStatus}
               </span>
             )}
           </div>
