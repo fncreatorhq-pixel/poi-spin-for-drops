@@ -95,6 +95,7 @@ const MysteryWheel = () => {
   );
   const [channelInput, setChannelInput] = useState(twitchChannel);
   const [chatState, setChatState] = useState<ChatState>('closed');
+  const [poiMode, setPoiMode] = useState<PoiMode>('idle');
   const [poiSlots, setPoiSlots] = useState<Slot[]>(buildDefaultPoiSlots());
   const [timeLeft, setTimeLeft] = useState(TIMER_SECONDS);
   const [twitchStatus, setTwitchStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected');
