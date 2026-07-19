@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { TwitchChatClient } from '@/lib/twitchChat';
 
 type WheelType = 'pois' | 'reload' | 'colors';
-type ReloadMap = 'venture' | 'oasis' | 'slurp';
+type ReloadMap = 'venture' | 'oasis' | 'slurp' | 'elite';
 type ChatState = 'closed' | 'collecting';
 type PoiMode = 'idle' | 'collecting' | 'ready';
 
@@ -77,6 +77,17 @@ const RELOAD_POIS: Record<ReloadMap, { label: string; emoji: string; pois: strin
       'Fort Crumpet',
       'Stilt Town',
       'Logjam Logging',
+    ],
+  },
+  elite: {
+    label: 'Elite Stronghold',
+    emoji: '🏔️',
+    pois: [
+      'Elite Armory',
+      'Top Tier Training',
+      'Hostile Hold',
+      'Elite Experiments',
+      'Chiseled Cubes',
     ],
   },
 };
