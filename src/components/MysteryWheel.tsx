@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Select,
@@ -11,11 +11,12 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { TwitchChatClient } from '@/lib/twitchChat';
 
-type WheelType = 'pois' | 'colors';
+type WheelType = 'pois' | 'reload' | 'colors';
+type ReloadMap = 'venture' | 'oasis' | 'slurp';
 type ChatState = 'closed' | 'collecting';
 type PoiMode = 'idle' | 'collecting' | 'ready';
 
-// Current season: Chapter 7 Season 3 "Runners" (2026)
+// Current BR season: Chapter 7 Season 3 "Runners" (2026)
 const CURRENT_SEASON_POIS = [
   'Wonkeeland',
   'Latte Landing',
@@ -31,6 +32,54 @@ const CURRENT_SEASON_POIS = [
   'Sinister Strip',
   'Heatwave Harbor',
 ];
+
+// Fortnite Reload named locations, per current rotation
+const RELOAD_POIS: Record<ReloadMap, { label: string; emoji: string; pois: string[] }> = {
+  venture: {
+    label: 'Venture (OG)',
+    emoji: '🏙️',
+    pois: [
+      'Tilted Towers',
+      'Retail Row',
+      'Pleasant Park',
+      'Lazy Laps',
+      'Dusty Docks',
+      'Lil’Loot Lake',
+      'Sandy Sheets',
+      'Lone Lodge',
+      'Snobby Shoals',
+    ],
+  },
+  oasis: {
+    label: 'Oasis (Desert)',
+    emoji: '🌵',
+    pois: [
+      'Snobby Sands',
+      'Lizard Links',
+      'Fossil Fields',
+      'Adobe Abodes',
+      'Guaco Town',
+      'Shady Springs',
+      'Paradise Palms',
+      'Sunburnt Shafts',
+      'Twisted Trailers',
+    ],
+  },
+  slurp: {
+    label: 'Slurp Rush',
+    emoji: '🥤',
+    pois: [
+      'Slurpy Swamp',
+      'Steamy Stacks',
+      'Dirty Docks',
+      'Boomin Base',
+      'Lockdown Lighthouse',
+      'Fort Crumpet',
+      'Stilt Town',
+      'Logjam Logging',
+    ],
+  },
+};
 
 const PALETTE = [
   'hsl(190, 100%, 45%)',
@@ -49,7 +98,6 @@ const PALETTE = [
 ];
 
 const PLACEHOLDER_COLOR = 'hsl(230, 15%, 30%)';
-const TOTAL_SLOTS = 13;
 const TIMER_SECONDS = 300; // 5 minutes
 const COMMAND = '!drop';
 
@@ -62,35 +110,35 @@ const COLORS = [
   { name: 'Mythic', color: 'hsl(35, 100%, 55%)' },
 ];
 
-
 type Slot = { name: string; color: string; user?: string; placeholder?: boolean };
 
-const buildDefaultPoiSlots = (): Slot[] =>
-  CURRENT_SEASON_POIS.map((name, i) => ({ name, color: PALETTE[i % PALETTE.length] }));
-
-const buildEmptySlots = (): Slot[] =>
-  Array.from({ length: TOTAL_SLOTS }, () => ({
+const buildEmptySlots = (count: number): Slot[] =>
+  Array.from({ length: count }, () => ({
     name: '???',
     color: PLACEHOLDER_COLOR,
     placeholder: true,
   }));
 
+const buildDefaultSlots = (pool: string[]): Slot[] =>
+  pool.map((name, i) => ({ name, color: PALETTE[i % PALETTE.length] }));
+
 const MysteryWheel = () => {
   const [wheelType, setWheelType] = useState<WheelType>('pois');
+  const [reloadMap, setReloadMap] = useState<ReloadMap>('venture');
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [bonusColor, setBonusColor] = useState<{ name: string; color: string } | null>(null);
   const [showResult, setShowResult] = useState(false);
 
-  // Chat integration state (POI wheel only)
+  // Chat integration state
   const [twitchChannel, setTwitchChannel] = useState<string>(
     () => (typeof window !== 'undefined' ? localStorage.getItem('twitchChannel') || '' : ''),
   );
   const [channelInput, setChannelInput] = useState(twitchChannel);
   const [chatState, setChatState] = useState<ChatState>('closed');
   const [poiMode, setPoiMode] = useState<PoiMode>('idle');
-  const [poiSlots, setPoiSlots] = useState<Slot[]>(buildDefaultPoiSlots());
+  const [poiSlots, setPoiSlots] = useState<Slot[]>(() => buildDefaultSlots(CURRENT_SEASON_POIS));
   const [timeLeft, setTimeLeft] = useState(TIMER_SECONDS);
   const [twitchStatus, setTwitchStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected');
 
@@ -98,7 +146,15 @@ const MysteryWheel = () => {
   const timerRef = useRef<number | null>(null);
   const suggestionsRef = useRef<Slot[]>([]);
 
-  const items: Slot[] = wheelType === 'pois' ? poiSlots : COLORS.map((c) => ({ ...c }));
+  const isChatWheel = wheelType === 'pois' || wheelType === 'reload';
+  const activePool = useMemo<string[]>(() => {
+    if (wheelType === 'reload') return RELOAD_POIS[reloadMap].pois;
+    return CURRENT_SEASON_POIS;
+  }, [wheelType, reloadMap]);
+  const totalSlots = activePool.length;
+
+  const items: Slot[] =
+    wheelType === 'colors' ? COLORS.map((c) => ({ ...c })) : poiSlots;
   const segmentAngle = 360 / items.length;
 
   const stopTwitch = useCallback(() => {
@@ -113,39 +169,52 @@ const MysteryWheel = () => {
     }
   }, []);
 
+  const resetSlotsToDefault = useCallback(() => {
+    setPoiSlots(buildDefaultSlots(activePool));
+  }, [activePool]);
+
+  // Whenever wheel selection changes while idle, reset the board
+  useEffect(() => {
+    if (poiMode === 'idle' && !isSpinning) {
+      if (isChatWheel) setPoiSlots(buildDefaultSlots(activePool));
+      setSelectedItem(null);
+      setShowResult(false);
+      setRotation(0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wheelType, reloadMap]);
+
   const closeCollection = useCallback(() => {
     stopTwitch();
     stopTimer();
-    // Autofill remaining slots with current-season POIs not already suggested
+    // Autofill remaining slots with POIs not already suggested from the active pool
     const used = new Set(
       suggestionsRef.current.map((s) => s.name.toLowerCase().trim()),
     );
-    const pool = CURRENT_SEASON_POIS.filter((p) => !used.has(p.toLowerCase()));
+    const pool = activePool.filter((p) => !used.has(p.toLowerCase()));
     const filled: Slot[] = [...suggestionsRef.current];
     let poolIdx = 0;
-    while (filled.length < TOTAL_SLOTS && poolIdx < pool.length) {
+    while (filled.length < totalSlots && poolIdx < pool.length) {
       filled.push({
         name: pool[poolIdx],
         color: PALETTE[filled.length % PALETTE.length],
       });
       poolIdx++;
     }
-    // If still short (should not happen), pad
-    while (filled.length < TOTAL_SLOTS) {
+    while (filled.length < totalSlots) {
       filled.push({ name: '???', color: PLACEHOLDER_COLOR, placeholder: true });
     }
     setPoiSlots(filled);
     setChatState('closed');
     setPoiMode('ready');
-  }, [stopTwitch, stopTimer]);
+  }, [stopTwitch, stopTimer, activePool, totalSlots]);
 
   const startCollection = useCallback(() => {
     if (!twitchChannel) return;
-    // Reset
     stopTwitch();
     stopTimer();
     suggestionsRef.current = [];
-    setPoiSlots(buildEmptySlots());
+    setPoiSlots(buildEmptySlots(totalSlots));
     setSelectedItem(null);
     setShowResult(false);
     setRotation(0);
@@ -153,7 +222,6 @@ const MysteryWheel = () => {
     setChatState('collecting');
     setPoiMode('collecting');
 
-    // Timer
     timerRef.current = window.setInterval(() => {
       setTimeLeft((t) => {
         if (t <= 1) {
@@ -164,7 +232,8 @@ const MysteryWheel = () => {
       });
     }, 1000);
 
-    // Twitch connection
+    const poolSnapshot = activePool;
+    const totalSnapshot = totalSlots;
     const client = new TwitchChatClient(
       twitchChannel,
       (username, message) => {
@@ -172,14 +241,12 @@ const MysteryWheel = () => {
         if (!trimmed.toLowerCase().startsWith(COMMAND)) return;
         const suggestion = trimmed.substring(COMMAND.length).trim();
         if (!suggestion) return;
-        // Only accept real POIs from the current season (case-insensitive match)
-        const matched = CURRENT_SEASON_POIS.find(
+        const matched = poolSnapshot.find(
           (p) => p.toLowerCase() === suggestion.toLowerCase(),
         );
         if (!matched) return;
-        // Dedup: one suggestion per user, and unique POIs
         const existing = suggestionsRef.current;
-        if (existing.length >= TOTAL_SLOTS) return;
+        if (existing.length >= totalSnapshot) return;
         if (existing.some((s) => s.user?.toLowerCase() === username.toLowerCase())) return;
         if (existing.some((s) => s.name.toLowerCase() === matched.toLowerCase())) return;
         const nextIndex = existing.length;
@@ -190,7 +257,7 @@ const MysteryWheel = () => {
         };
         suggestionsRef.current = [...existing, newSlot];
         setPoiSlots(() => {
-          const slots = buildEmptySlots();
+          const slots = buildEmptySlots(totalSnapshot);
           suggestionsRef.current.forEach((s, i) => (slots[i] = s));
           return slots;
         });
@@ -199,17 +266,17 @@ const MysteryWheel = () => {
     );
     chatClientRef.current = client;
     client.connect();
-  }, [twitchChannel, stopTwitch, stopTimer, closeCollection]);
+  }, [twitchChannel, stopTwitch, stopTimer, closeCollection, activePool, totalSlots]);
 
   const cancelCollection = useCallback(() => {
     stopTwitch();
     stopTimer();
     suggestionsRef.current = [];
-    setPoiSlots(buildDefaultPoiSlots());
+    resetSlotsToDefault();
     setChatState('closed');
     setPoiMode('idle');
     setTimeLeft(TIMER_SECONDS);
-  }, [stopTwitch, stopTimer]);
+  }, [stopTwitch, stopTimer, resetSlotsToDefault]);
 
   useEffect(() => {
     return () => {
@@ -224,6 +291,15 @@ const MysteryWheel = () => {
     setRotation(0);
     setSelectedItem(null);
     setShowResult(false);
+    setPoiMode('idle');
+    suggestionsRef.current = [];
+  };
+
+  const handleReloadMapChange = (value: ReloadMap) => {
+    if (isSpinning || chatState === 'collecting') return;
+    setReloadMap(value);
+    setPoiMode('idle');
+    suggestionsRef.current = [];
   };
 
   const saveChannel = () => {
@@ -256,7 +332,7 @@ const MysteryWheel = () => {
       const landedNormalized = normalize360(-totalRotation);
       const landedIndex = Math.floor(landedNormalized / segmentAngle) % items.length;
       setSelectedItem(items[landedIndex].name);
-      if (wheelType === 'pois') {
+      if (isChatWheel) {
         setBonusColor(COLORS[Math.floor(Math.random() * COLORS.length)]);
       } else {
         setBonusColor(null);
@@ -323,21 +399,44 @@ const MysteryWheel = () => {
   const ss = String(timeLeft % 60).padStart(2, '0');
   const suggestionCount = suggestionsRef.current.length;
 
+  const centerEmoji =
+    wheelType === 'colors' ? '🎨' : wheelType === 'reload' ? RELOAD_POIS[reloadMap].emoji : 'FN';
+
   return (
     <div className="relative flex flex-col items-center gap-2 w-full max-w-3xl">
       {/* Top control row */}
       <div className="flex flex-wrap items-center justify-center gap-2 z-20 w-full">
         <Select value={wheelType} onValueChange={handleWheelChange} disabled={isSpinning || collecting}>
-          <SelectTrigger className="w-[150px] bg-card border-primary/30 text-foreground text-sm">
+          <SelectTrigger className="w-[160px] bg-card border-primary/30 text-foreground text-sm">
             <SelectValue placeholder="Select wheel" />
           </SelectTrigger>
           <SelectContent className="bg-card border-primary/30">
-            <SelectItem value="pois">📍 Drop Location</SelectItem>
+            <SelectItem value="pois">📍 BR Drop Location</SelectItem>
+            <SelectItem value="reload">🔄 Reload Drop</SelectItem>
             <SelectItem value="colors">🎨 Rarity Color</SelectItem>
           </SelectContent>
         </Select>
 
-        {wheelType === 'pois' && (
+        {wheelType === 'reload' && (
+          <Select
+            value={reloadMap}
+            onValueChange={(v) => handleReloadMapChange(v as ReloadMap)}
+            disabled={isSpinning || collecting}
+          >
+            <SelectTrigger className="w-[170px] bg-card border-primary/30 text-foreground text-sm">
+              <SelectValue placeholder="Reload island" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-primary/30">
+              {(Object.keys(RELOAD_POIS) as ReloadMap[]).map((k) => (
+                <SelectItem key={k} value={k}>
+                  {RELOAD_POIS[k].emoji} {RELOAD_POIS[k].label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
+        {isChatWheel && (
           <div className="flex items-center gap-1">
             <span className="text-xs text-muted-foreground font-body">Twitch:</span>
             <Input
@@ -386,7 +485,7 @@ const MysteryWheel = () => {
       </div>
 
       {/* Collecting HUD */}
-      {wheelType === 'pois' && collecting && (
+      {isChatWheel && collecting && (
         <div className="w-full max-w-md bg-card/80 border-2 border-destructive rounded-lg px-4 py-2 flex items-center justify-between animate-pulse-glow">
           <div className="text-left">
             <p className="text-xs text-muted-foreground font-body">SUGGESTIONS OPEN</p>
@@ -399,7 +498,7 @@ const MysteryWheel = () => {
               {mm}:{ss}
             </p>
             <p className="text-xs text-muted-foreground">
-              {suggestionCount}/{TOTAL_SLOTS} slots
+              {suggestionCount}/{totalSlots} slots
             </p>
           </div>
         </div>
@@ -426,7 +525,7 @@ const MysteryWheel = () => {
                   textAnchor="middle" dominantBaseline="middle"
                   style={{ fontFamily: 'Orbitron, sans-serif' }}
                 >
-                  {wheelType === 'pois' ? 'FN' : '🎨'}
+                  {centerEmoji}
                 </text>
               </svg>
             </div>
@@ -440,7 +539,7 @@ const MysteryWheel = () => {
         </div>
       </div>
 
-      {/* Big red LET'S GO button + Spin */}
+      {/* Action button / result card */}
       <motion.div layout transition={{ type: 'spring', stiffness: 200, damping: 22 }} className="relative flex flex-col items-center gap-2">
         <AnimatePresence mode="wait" initial={false}>
           {showResult && selectedItem ? (
@@ -453,9 +552,9 @@ const MysteryWheel = () => {
               transition={{ type: 'spring', stiffness: 120, damping: 14, duration: 0.8 }}
               onClick={() => {
                 setShowResult(false);
-                if (wheelType === 'pois') {
+                if (isChatWheel) {
                   setPoiMode('idle');
-                  setPoiSlots(buildDefaultPoiSlots());
+                  setPoiSlots(buildDefaultSlots(activePool));
                   suggestionsRef.current = [];
                   setRotation(0);
                 }
@@ -464,12 +563,12 @@ const MysteryWheel = () => {
               style={{ boxShadow: '0 0 40px hsl(var(--primary) / 0.6), 0 0 80px hsl(var(--accent) / 0.4)' }}
             >
               <p className="text-muted-foreground font-body text-base mb-1">
-                {wheelType === 'pois' ? "You're dropping at:" : 'Your color is:'}
+                {isChatWheel ? "You're dropping at:" : 'Your color is:'}
               </p>
               <h2 className="text-4xl md:text-5xl font-display font-bold text-primary text-glow mb-2">
                 {selectedItem}
               </h2>
-              <p className="text-4xl mb-1">{wheelType === 'pois' ? '🪂' : '🎨'}</p>
+              <p className="text-4xl mb-1">{isChatWheel ? '🪂' : '🎨'}</p>
               {bonusColor && (
                 <div className="mt-2 space-y-1 border-t border-primary/30 pt-2">
                   <div>
@@ -506,25 +605,24 @@ const MysteryWheel = () => {
             </motion.div>
           ) : (
             (() => {
-              const isPoi = wheelType === 'pois';
-              const showSpin = isPoi ? poiMode === 'ready' : true;
-              const disabled = isPoi
+              const showSpin = isChatWheel ? poiMode === 'ready' : true;
+              const disabled = isChatWheel
                 ? (poiMode === 'idle' ? !twitchChannel : (isSpinning || hasPlaceholders))
                 : isSpinning;
               const onClick = () => {
                 if (isSpinning) return;
-                if (!isPoi) return spin();
+                if (!isChatWheel) return spin();
                 if (poiMode === 'idle') return startCollection();
                 if (poiMode === 'ready') return spin();
               };
               const label = isSpinning
                 ? '🌀 SPINNING…'
                 : showSpin
-                ? (isPoi ? '🎯 SPIN THE WHEEL!' : '🎨 SPIN FOR COLOR')
+                ? (isChatWheel ? '🎯 SPIN THE WHEEL!' : '🎨 SPIN FOR COLOR')
                 : "🚨 LET'S GO!";
-              const sublabel = isPoi && poiMode === 'idle'
+              const sublabel = isChatWheel && poiMode === 'idle'
                 ? `Open chat for ${TIMER_SECONDS / 60} min`
-                : isPoi && poiMode === 'ready'
+                : isChatWheel && poiMode === 'ready'
                 ? 'Board locked — spin it!'
                 : null;
               return (
@@ -535,7 +633,7 @@ const MysteryWheel = () => {
                   exit={{ scale: 0.3, opacity: 0 }}
                   onClick={onClick}
                   disabled={disabled}
-                  title={isPoi && poiMode === 'idle' && !twitchChannel ? 'Set your Twitch channel first' : undefined}
+                  title={isChatWheel && poiMode === 'idle' && !twitchChannel ? 'Set your Twitch channel first' : undefined}
                   className={`
                     relative px-10 py-4 rounded-full font-display text-xl font-bold uppercase tracking-wider
                     bg-gradient-to-br from-destructive to-red-700 text-destructive-foreground
@@ -560,7 +658,7 @@ const MysteryWheel = () => {
       </motion.div>
 
       {/* Suggestion list */}
-      {wheelType === 'pois' && collecting && suggestionCount > 0 && (
+      {isChatWheel && collecting && suggestionCount > 0 && (
         <div className="mt-1 w-full max-w-md">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
             {suggestionsRef.current.map((s, i) => (
