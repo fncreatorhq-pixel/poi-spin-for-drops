@@ -39,9 +39,10 @@ const BR_WEAPONS = [
   'Pump Shotgun', '8-Bit Shotgun', 'Tactical Pistol',
 ];
 const RELOAD_WEAPONS = [
-  'Morphite Assault Rifle', 'Fury Assault Rifle', 'Tactical Assault Rifle',
+  'Morphite Assault Rifle', 'Morphite Heavy Assault Rifle', 'Morphite Spire Rifle',
+  'Fury Assault Rifle', 'Tactical Assault Rifle', 'Morphite Pump Shotgun',
   'Combat Shotgun', 'Iron Pump Shotgun', 'Ranger Shotgun',
-  'Combat SMG', 'Dual Micro SMGs', 'Suppressed Pistol',
+  'Combat SMG', 'Red-Eye Submachine Gun', 'Dual Micro SMGs', 'Suppressed Pistol',
   'Hammer Revolver', 'Hunting Rifle', 'Heavy Impact Sniper Rifle',
 ];
 
@@ -56,7 +57,7 @@ const RELOAD_POIS: Record<ReloadMap, { label: string; emoji: string; pois: strin
       'Pleasant Park',
       'Lazy Laps',
       'Dusty Docks',
-      'Lil’Loot Lake',
+       'Lil’ Loot Lake',
       'Sandy Sheets',
       'Lone Lodge',
       'Snobby Shoals',
