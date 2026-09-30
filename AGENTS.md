@@ -1,0 +1,1 @@
+- Keep season-specific named POIs and standard gun pools in the wheel configuration, with Battle Royale and Reload pools separate, because chat validation and first-kill picks must match the selected mode.

@@ -11,26 +11,39 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { TwitchChatClient } from '@/lib/twitchChat';
 
-type WheelType = 'pois' | 'reload' | 'colors';
-type ReloadMap = 'venture' | 'oasis' | 'slurp' | 'elite';
+type WheelType = 'pois' | 'reload' | 'weapons' | 'colors';
+type ReloadMap = 'venture' | 'oasis' | 'slurp' | 'elite' | 'springfield';
 type ChatState = 'closed' | 'collecting';
 type PoiMode = 'idle' | 'collecting' | 'ready';
 
-// Current BR season: Chapter 7 Season 3 "Runners" (2026)
+// Chapter 7 Season 4: Override (September 2026). Named locations only.
 const CURRENT_SEASON_POIS = [
   'Wonkeeland',
   'Latte Landing',
   'Lifty Lodge',
-  'Battlewoods',
+  'The Battlewoods',
   'Chopped Shop',
-  'Calamari Canyon',
-  'Frosted Flats',
+  'Reality’s Reign',
+  'Stone Sanctum',
   'Golden Grove',
   'Shaken Sanctuary',
   'Cluster Coast',
   'Sunken Shores',
-  'Sinister Strip',
+  'Green Hill Zone',
   'Heatwave Harbor',
+];
+
+// Standard guns rather than limited Mythics or Loot Hack-only finds; Reload has its own pool.
+const BR_WEAPONS = [
+  'Assault Rifle', 'Ranger Assault Rifle', 'Drum Gun',
+  'Pump Shotgun', '8-Bit Shotgun', 'Tactical Pistol',
+];
+const RELOAD_WEAPONS = [
+  'Morphite Assault Rifle', 'Morphite Heavy Assault Rifle', 'Morphite Spire Rifle',
+  'Fury Assault Rifle', 'Tactical Assault Rifle', 'Morphite Pump Shotgun',
+  'Combat Shotgun', 'Iron Pump Shotgun', 'Ranger Shotgun',
+  'Combat SMG', 'Red-Eye Submachine Gun', 'Dual Micro SMGs', 'Suppressed Pistol',
+  'Hammer Revolver', 'Hunting Rifle', 'Heavy Impact Sniper Rifle',
 ];
 
 // Fortnite Reload named locations, per current rotation
@@ -44,7 +57,7 @@ const RELOAD_POIS: Record<ReloadMap, { label: string; emoji: string; pois: strin
       'Pleasant Park',
       'Lazy Laps',
       'Dusty Docks',
-      'Lil’Loot Lake',
+       'Lil’ Loot Lake',
       'Sandy Sheets',
       'Lone Lodge',
       'Snobby Shoals',
@@ -88,6 +101,22 @@ const RELOAD_POIS: Record<ReloadMap, { label: string; emoji: string; pois: strin
       'Hostile Hold',
       'Elite Experiments',
       'Chiseled Cubes',
+      'Peerless Pier',
+    ],
+  },
+  springfield: {
+    label: 'Springfield Island',
+    emoji: '🍩',
+    pois: [
+      'Burns Manor',
+      'Cletus’ Corn Hole',
+      'Corruption Corners',
+      'Donut District',
+      'Evergreen Terrace',
+      'Kamp Krusty',
+      'Springfield Nuclear Power Plant',
+      'Springfield Slurpworks',
+      'Springfield Town Square',
     ],
   },
 };
@@ -140,6 +169,8 @@ const MysteryWheel = () => {
   const [rotation, setRotation] = useState(0);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [bonusColor, setBonusColor] = useState<{ name: string; color: string } | null>(null);
+  const [bonusWeapon, setBonusWeapon] = useState<string | null>(null);
+  const [weaponMode, setWeaponMode] = useState<'br' | 'reload'>('br');
   const [showResult, setShowResult] = useState(false);
 
   // Chat integration state
@@ -164,8 +195,12 @@ const MysteryWheel = () => {
   }, [wheelType, reloadMap]);
   const totalSlots = activePool.length;
 
-  const items: Slot[] =
-    wheelType === 'colors' ? COLORS.map((c) => ({ ...c })) : poiSlots;
+  const weaponPool = weaponMode === 'reload' ? RELOAD_WEAPONS : BR_WEAPONS;
+  const items: Slot[] = wheelType === 'colors'
+    ? COLORS.map((c) => ({ ...c }))
+    : wheelType === 'weapons'
+    ? buildDefaultSlots(weaponPool)
+    : poiSlots;
   const segmentAngle = 360 / items.length;
 
   const stopTwitch = useCallback(() => {
@@ -228,6 +263,7 @@ const MysteryWheel = () => {
     setPoiSlots(buildEmptySlots(totalSlots));
     setSelectedItem(null);
     setShowResult(false);
+    setBonusWeapon(null);
     setRotation(0);
     setTimeLeft(TIMER_SECONDS);
     setChatState('collecting');
@@ -345,8 +381,11 @@ const MysteryWheel = () => {
       setSelectedItem(items[landedIndex].name);
       if (isChatWheel) {
         setBonusColor(COLORS[Math.floor(Math.random() * COLORS.length)]);
+        const guns = wheelType === 'reload' ? RELOAD_WEAPONS : BR_WEAPONS;
+        setBonusWeapon(guns[Math.floor(Math.random() * guns.length)]);
       } else {
         setBonusColor(null);
+        setBonusWeapon(null);
       }
       setShowResult(true);
     }, 5000);
@@ -386,7 +425,7 @@ const MysteryWheel = () => {
             x={textX}
             y={textY}
             fill={textColor}
-            fontSize={wheelType === 'colors' ? '4' : '2.6'}
+            fontSize={wheelType === 'colors' ? '4' : wheelType === 'weapons' ? '2.4' : '2.6'}
             fontWeight="bold"
             textAnchor="middle"
             dominantBaseline="middle"
@@ -411,7 +450,7 @@ const MysteryWheel = () => {
   const suggestionCount = suggestionsRef.current.length;
 
   const centerEmoji =
-    wheelType === 'colors' ? '🎨' : wheelType === 'reload' ? RELOAD_POIS[reloadMap].emoji : 'FN';
+    wheelType === 'colors' ? '🎨' : wheelType === 'weapons' ? '🔫' : wheelType === 'reload' ? RELOAD_POIS[reloadMap].emoji : 'FN';
 
   return (
     <div className="relative flex flex-col items-center gap-2 w-full max-w-3xl">
@@ -424,6 +463,7 @@ const MysteryWheel = () => {
           <SelectContent className="bg-card border-primary/30">
             <SelectItem value="pois">📍 BR Drop Location</SelectItem>
             <SelectItem value="reload">🔄 Reload Drop</SelectItem>
+            <SelectItem value="weapons">🔫 Gun Wheel</SelectItem>
             <SelectItem value="colors">🎨 Rarity Color</SelectItem>
           </SelectContent>
         </Select>
@@ -443,6 +483,18 @@ const MysteryWheel = () => {
                   {RELOAD_POIS[k].emoji} {RELOAD_POIS[k].label}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+        )}
+
+        {wheelType === 'weapons' && (
+          <Select value={weaponMode} onValueChange={(value: 'br' | 'reload') => { setWeaponMode(value); setRotation(0); setShowResult(false); }} disabled={isSpinning}>
+            <SelectTrigger className="w-[140px] bg-card border-primary/30 text-foreground text-sm">
+              <SelectValue placeholder="Gun mode" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-primary/30">
+              <SelectItem value="br">Battle Royale</SelectItem>
+              <SelectItem value="reload">Reload</SelectItem>
             </SelectContent>
           </Select>
         )}
@@ -574,12 +626,15 @@ const MysteryWheel = () => {
               style={{ boxShadow: '0 0 40px hsl(var(--primary) / 0.6), 0 0 80px hsl(var(--accent) / 0.4)' }}
             >
               <p className="text-muted-foreground font-body text-base mb-1">
-                {isChatWheel ? "You're dropping at:" : 'Your color is:'}
+                 {isChatWheel ? "You're dropping at:" : wheelType === 'weapons' ? 'Your first kill gun:' : 'Your color is:'}
               </p>
               <h2 className="text-4xl md:text-5xl font-display font-bold text-primary text-glow mb-2">
                 {selectedItem}
               </h2>
-              <p className="text-4xl mb-1">{isChatWheel ? '🪂' : '🎨'}</p>
+               <p className="text-4xl mb-1">{isChatWheel ? '🪂' : wheelType === 'weapons' ? '🔫' : '🎨'}</p>
+               {bonusWeapon && (
+                 <p className="font-display text-base text-foreground mt-2">First kill gun: <strong className="text-primary">{bonusWeapon}</strong></p>
+               )}
               {bonusColor && (
                 <div className="mt-2 space-y-1 border-t border-primary/30 pt-2">
                   <div>
@@ -622,14 +677,14 @@ const MysteryWheel = () => {
                 : isSpinning;
               const onClick = () => {
                 if (isSpinning) return;
-                if (!isChatWheel) return spin();
+                 if (!isChatWheel) return spin();
                 if (poiMode === 'idle') return startCollection();
                 if (poiMode === 'ready') return spin();
               };
               const label = isSpinning
                 ? '🌀 SPINNING…'
-                : showSpin
-                ? (isChatWheel ? '🎯 SPIN THE WHEEL!' : '🎨 SPIN FOR COLOR')
+                 : showSpin
+                 ? (isChatWheel ? '🎯 SPIN THE WHEEL!' : wheelType === 'weapons' ? '🔫 SPIN FOR GUN' : '🎨 SPIN FOR COLOR')
                 : "🚨 LET'S GO!";
               const sublabel = isChatWheel && poiMode === 'idle'
                 ? `Open chat for ${TIMER_SECONDS / 60} min`
