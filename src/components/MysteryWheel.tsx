@@ -16,12 +16,14 @@ type ReloadMap = 'venture' | 'oasis' | 'slurp' | 'elite' | 'springfield';
 type ChatState = 'closed' | 'collecting';
 type PoiMode = 'idle' | 'collecting' | 'ready';
 
-// Chapter 7 Season 4: Override (September 2026). Named locations only.
+// Chapter 7 Season 4: Override / Fortnitemares, verified October 10, 2026.
+// v42.30 replaced Latte Landing and The Battlewoods with these Halloween POIs.
+// https://www.digitaltq.com/fortnite-fortnitemares-2026-event-guide
 const CURRENT_SEASON_POIS = [
   'Wonkeeland',
-  'Latte Landing',
+  'Freaky Fields',
   'Lifty Lodge',
-  'The Battlewoods',
+  'Nightmare Neighborhood',
   'Chopped Shop',
   'Reality’s Reign',
   'Stone Sanctum',
