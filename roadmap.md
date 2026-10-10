@@ -1,4 +1,4 @@
 - [x] Update Battle Royale named drop spots for Chapter 7 Season 4 Override.
 - [x] Refresh Reload island drop spots, including Elite Stronghold and Springfield Island.
 - [x] Add current Battle Royale and Reload gun picks to the wheel and first-kill result.
-- [ ] Verify and update the current season's Battle Royale POIs and matching chat suggestions.
+- [x] Verify and update the current season's Battle Royale POIs and matching chat suggestions.
